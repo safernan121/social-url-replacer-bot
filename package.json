@@ -15,6 +15,7 @@
     "dev": "tsx watch src/index.ts",
     "deploy-commands": "node dist/deploy-commands.js",
     "deploy-commands:dev": "tsx src/deploy-commands.ts",
+    "healthcheck": "node dist/healthcheck.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run"

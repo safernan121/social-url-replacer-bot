@@ -26,6 +26,7 @@ choose whether the bot also hides the original (broken) embed.
 - [5. Configure it](#5-configure-it)
 - [Security](#security)
 - [Tips for first-time bot hosts](#tips-for-first-time-bot-hosts)
+- [Health check](#health-check)
 - [Updating](#updating)
 - [Backups](#backups)
 - [Troubleshooting](#troubleshooting)
@@ -129,6 +130,9 @@ docker compose logs -f                                     # check it's online
 ```
 
 Settings are stored in a Docker volume (`bot-data`), so they survive rebuilds.
+
+`docker compose ps` shows whether the bot is **healthy**, meaning connected to
+Discord. See [Health check](#health-check).
 
 ### Option B: Node.js
 
@@ -304,6 +308,29 @@ Found a vulnerability? See [SECURITY.md](SECURITY.md).
 6. **Keep it updated.** Dependabot opens PRs for dependency updates. Run
    `npm audit` occasionally if you're not using GitHub.
 
+## Health check
+
+The bot has no web server and opens no ports. Instead, while it's connected to
+Discord it writes a timestamp to a heartbeat file every 15 seconds:
+
+- `npm run healthcheck` (or `node dist/healthcheck.js`) prints `healthy` and
+  exits with code 0 if the heartbeat is less than 60 seconds old. Otherwise it
+  prints `unhealthy` and exits with code 1.
+- The Docker image runs this check every 30 seconds, so `docker compose ps`
+  shows `healthy` or `unhealthy`.
+- If the bot can't connect, or stays disconnected for more than 5 minutes, it
+  exits with code 1 so Docker, pm2 or systemd restart it. Short disconnects are
+  normal, and discord.js reconnects on its own.
+
+Docker on its own doesn't restart containers just for being *unhealthy*. That's
+why the bot exits by itself when it's stuck. To get alerts, point your
+monitoring at `docker inspect --format '{{.State.Health.Status}}' <container>`
+or at the healthcheck command.
+
+The heartbeat file is `/tmp/heartbeat` in Docker. When running with Node it's
+in the system temp directory. Set `HEARTBEAT_PATH` to change it, and use the
+same value for the bot and the healthcheck command.
+
 ## Updating
 
 ```sh
@@ -346,6 +373,7 @@ restore, copy the file back the same way while the bot is stopped.
 | `/fixlinks add` says the domain isn't allowed | The replacement isn't on `allowedCustomTargets` in `config/rules.json`. The bot owner can add it there. |
 | `Invalid environment configuration` at startup | `.env` is missing or a value is wrong. Compare it with `.env.example`. |
 | `Invalid rules config` at startup | Fix the reported entry in `config/rules.json`. |
+| Container shows `unhealthy` | The bot isn't connected to Discord. Check `docker compose logs` for errors, such as an invalid token or network problems. It restarts by itself after 5 minutes disconnected. |
 | `An invalid token was provided` | The token is wrong or was reset. Copy a fresh one into `.env`. |
 
 ## Development
@@ -370,6 +398,8 @@ src/
   tracking.ts           removes tracking parameters
   store.ts              SQLite storage for per-server settings
   rateLimit.ts          spam protection
+  health.ts             heartbeat + exit-when-stuck watchdog
+  healthcheck.ts        healthcheck command used by Docker
   commands/fixlinks.ts  /fixlinks slash command
   handlers/             message and interaction handlers
 test/                   unit tests (vitest)

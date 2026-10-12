@@ -15,7 +15,8 @@ RUN npm run build && npm prune --omit=dev
 FROM node:22-alpine
 ENV NODE_ENV=production \
     DATABASE_PATH=/app/data/bot.db \
-    RULES_PATH=/app/config/rules.json
+    RULES_PATH=/app/config/rules.json \
+    HEARTBEAT_PATH=/tmp/heartbeat
 WORKDIR /app
 COPY --from=build --chown=root:root /app/node_modules ./node_modules
 COPY --from=build --chown=root:root /app/dist ./dist
@@ -28,4 +29,7 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack 
  && mkdir -p /app/data && chown node:node /app/data && chmod 700 /app/data
 USER node
 VOLUME ["/app/data"]
+# Healthy while the bot keeps refreshing its heartbeat file (i.e. is connected to Discord).
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD ["node", "dist/healthcheck.js"]
 CMD ["node", "dist/index.js"]

@@ -2,6 +2,7 @@ import { Client, Events, GatewayIntentBits, Options } from "discord.js";
 import { loadConfig } from "./config.js";
 import type { BotContext } from "./context.js";
 import { loadEnv } from "./env.js";
+import { HealthMonitor, isConnected } from "./health.js";
 import { onInteractionCreate } from "./handlers/interactionCreate.js";
 import { onMessageCreate } from "./handlers/messageCreate.js";
 import { logger, safeError } from "./logger.js";
@@ -66,17 +67,26 @@ client.on(Events.Error, (error) => logger.error({ err: safeError(error) }, "Clie
 const sweepTimer = setInterval(() => ctx.rateLimiter.sweep(), 60_000);
 sweepTimer.unref();
 
+const health = new HealthMonitor(
+  () => isConnected(client),
+  () => void shutdown("unhealthy", 1),
+);
+health.start();
+
 process.on("unhandledRejection", (reason) => logger.error({ err: safeError(reason) }, "Unhandled rejection"));
 
 let shuttingDown = false;
-async function shutdown(signal: string): Promise<void> {
+async function shutdown(reason: string, exitCode = 0): Promise<void> {
   if (shuttingDown) return;
   shuttingDown = true;
-  logger.info({ signal }, "Shutting down");
+  logger.info({ reason }, "Shutting down");
+  // Don't let a stuck connection keep the process alive.
+  setTimeout(() => process.exit(exitCode || 1), 10_000).unref();
   clearInterval(sweepTimer);
+  health.stop();
   await client.destroy();
   store.close();
-  process.exit(0);
+  process.exit(exitCode);
 }
 process.on("SIGINT", () => void shutdown("SIGINT"));
 process.on("SIGTERM", () => void shutdown("SIGTERM"));
