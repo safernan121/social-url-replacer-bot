@@ -1,0 +1,29 @@
+{
+  "rules": [
+    { "from": "x.com", "to": "vxtwitter.com" },
+    { "from": "twitter.com", "to": "vxtwitter.com" },
+    { "from": "instagram.com", "to": "instagramez.com" },
+    { "from": "tiktok.com", "to": "vxtiktok.com" },
+    { "from": "reddit.com", "to": "vxreddit.com" },
+    { "from": "pixiv.net", "to": "phixiv.net" },
+    { "from": "pixiv.com", "to": "phixiv.net" }
+  ],
+  "policy": {
+    "maxCustomRulesPerGuild": 25,
+    "allowedCustomTargets": [
+      "vxtwitter.com",
+      "fixvx.com",
+      "fxtwitter.com",
+      "fixupx.com",
+      "instagramez.com",
+      "kkinstagram.com",
+      "vxtiktok.com",
+      "tnktok.com",
+      "vxreddit.com",
+      "rxddit.com",
+      "phixiv.net",
+      "fxbsky.app",
+      "bskx.app"
+    ]
+  }
+}
