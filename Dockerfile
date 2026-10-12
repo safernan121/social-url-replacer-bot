@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---- Build: compile TypeScript ----
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 # Toolchain in case better-sqlite3 has no prebuilt binary for this platform.
 RUN apk add --no-cache python3 make g++
@@ -12,7 +12,7 @@ COPY src ./src
 RUN npm run build && npm prune --omit=dev
 
 # ---- Runtime: only production deps + compiled JS ----
-FROM node:22-alpine
+FROM node:26-alpine
 ENV NODE_ENV=production \
     DATABASE_PATH=/app/data/bot.db \
     RULES_PATH=/app/config/rules.json \
