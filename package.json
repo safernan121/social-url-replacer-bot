@@ -7,7 +7,7 @@
   "type": "module",
   "main": "dist/index.js",
   "engines": {
-    "node": ">=20.19"
+    "node": ">=22.12"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -21,7 +21,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "better-sqlite3": "12.11.1",
+    "better-sqlite3": "13.0.3",
     "discord.js": "14.27.0",
     "pino": "10.4.0",
     "zod": "4.6.7"
@@ -29,11 +29,11 @@
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@types/better-sqlite3": "9.6.0",
-    "@types/node": "20.19.43",
+    "@types/node": "22.20.5",
     "eslint": "10.12.0",
     "tsx": "4.23.15",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.2",
-    "vitest": "4.1.11"
+    "vitest": "5.0.3"
   }
 }

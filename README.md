@@ -136,7 +136,7 @@ Discord. See [Health check](#health-check).
 
 ### Option B: Node.js
 
-Requires [Node.js](https://nodejs.org/) 20.19 or newer (22 LTS recommended).
+Requires [Node.js](https://nodejs.org/) 22.12 or newer (an LTS release is recommended).
 
 ```sh
 npm ci
